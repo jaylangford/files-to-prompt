@@ -45,27 +45,61 @@ This will output the contents of every file, with each file preceded by its rela
   files-to-prompt path/to/directory --include-hidden
   ```
 
+- `--ignore <pattern>`: Specify one or more patterns to ignore. Can be used multiple times. Patterns may match file names and directory names, unless you also specify `--ignore-files-only`. Pattern syntax uses [fnmatch](https://docs.python.org/3/library/fnmatch.html), which supports `*`, `?`, `[anychar]`, `[!notchars]` and `[?]` for special character literals.
+  ```bash
+  files-to-prompt path/to/directory --ignore "*.log" --ignore "temp*"
+  ```
+
+- `--ignore-files-only`: Include directory paths which would otherwise be ignored by an `--ignore` pattern.
+
+  ```bash
+  files-to-prompt path/to/directory --ignore-files-only --ignore "*dir*"
+  ```
+
 - `--ignore-gitignore`: Ignore `.gitignore` files and include all files.
 
   ```bash
   files-to-prompt path/to/directory --ignore-gitignore
   ```
 
-- `--ignore <pattern>`: Specify one or more patterns to ignore. Can be used multiple times.
-  ```bash
-  files-to-prompt path/to/directory --ignore "*.log" --ignore "temp*"
-  ```
-
-- `c/--cxml`: Output in Claude XML format.
+- `-c/--cxml`: Output in Claude XML format.
 
   ```bash
   files-to-prompt path/to/directory --cxml
+  ```
+
+- `-m/--markdown`: Output as Markdown with fenced code blocks.
+
+  ```bash
+  files-to-prompt path/to/directory --markdown
   ```
 
 - `-o/--output <file>`: Write the output to a file instead of printing it to the console.
 
   ```bash
   files-to-prompt path/to/directory -o output.txt
+  ```
+
+- `-n/--line-numbers`: Include line numbers in the output.
+
+  ```bash
+  files-to-prompt path/to/directory -n
+  ```
+  Example output:
+  ```
+  files_to_prompt/cli.py
+  ---
+    1  import os
+    2  from fnmatch import fnmatch
+    3
+    4  import click
+    ...
+  ```
+
+- `-0/--null`: Use NUL character as separator when reading paths from stdin. Useful when filenames may contain spaces.
+
+  ```bash
+  find . -name "*.py" -print0 | files-to-prompt --null
   ```
 
 ### Example
@@ -126,6 +160,41 @@ Contents of file3.txt
 ---
 ```
 
+If you run `files-to-prompt my_directory --ignore "sub*"`, the output will exclude all files in `subdirectory/` (unless you also specify `--ignore-files-only`):
+
+```
+my_directory/file1.txt
+---
+Contents of file1.txt
+---
+my_directory/file2.txt
+---
+Contents of file2.txt
+---
+```
+
+### Reading from stdin
+
+The tool can also read paths from standard input. This can be used to pipe in the output of another command:
+
+```bash
+# Find files modified in the last day
+find . -mtime -1 | files-to-prompt
+```
+
+When using the `--null` (or `-0`) option, paths are expected to be NUL-separated (useful when dealing with filenames containing spaces):
+
+```bash
+find . -name "*.txt" -print0 | files-to-prompt --null
+```
+
+You can mix and match paths from command line arguments and stdin:
+
+```bash
+# Include files modified in the last day, and also include README.md
+find . -mtime -1 | files-to-prompt README.md
+```
+
 ### Claude XML Output
 
 Anthropic has provided [specific guidelines](https://docs.anthropic.com/claude/docs/long-context-window-tips) for optimally structuring prompts to take advantage of Claude's extended context window.
@@ -148,6 +217,40 @@ Contents of file2.txt
 </document>
 </documents>
 ```
+
+## --markdown fenced code block output
+
+The `--markdown` option will output the files as fenced code blocks, which can be useful for pasting into Markdown documents.
+
+```bash
+files-to-prompt path/to/directory --markdown
+```
+The language tag will be guessed based on the filename.
+
+If the code itself contains triple backticks the wrapper around it will use one additional backtick.
+
+Example output:
+`````
+myfile.py
+```python
+def my_function():
+    return "Hello, world!"
+```
+other.js
+```javascript
+function myFunction() {
+    return "Hello, world!";
+}
+```
+file_with_triple_backticks.md
+````markdown
+This file has its own
+```
+fenced code blocks
+```
+Inside it.
+````
+`````
 
 ## Development
 
