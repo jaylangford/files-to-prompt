@@ -1,5 +1,9 @@
 # files-to-prompt
 
+This personal fork of files-to-prompt adds a default.nix file so that files-to-prompt can be installed using nix. My solution is very hacky and probably not the correct way to do this.
+
+-JL
+
 [![PyPI](https://img.shields.io/pypi/v/files-to-prompt.svg)](https://pypi.org/project/files-to-prompt/)
 [![Changelog](https://img.shields.io/github/v/release/simonw/files-to-prompt?include_prereleases&label=changelog)](https://github.com/simonw/files-to-prompt/releases)
 [![Tests](https://github.com/simonw/files-to-prompt/actions/workflows/test.yml/badge.svg)](https://github.com/simonw/files-to-prompt/actions/workflows/test.yml)
